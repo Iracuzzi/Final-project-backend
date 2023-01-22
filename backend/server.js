@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 
-const mongoUrl = process.env.MONGO_URL || "mongodb://localhost/project-mongo";
+const mongoUrl = process.env.MONGO_URL || "mongodb://localhost/final-project";
 mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
 mongoose.Promise = Promise;
 
@@ -21,13 +21,14 @@ const UserSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  nickname: {
-    type: String,
-    required: true,
-  },
   password: {
     type: String,
     required: true
+  },
+  nickname: {
+    type: String,
+    required: true,
+    unique: true
   },
   accessToken: {
     type: String,
@@ -37,23 +38,74 @@ const UserSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", UserSchema);
 
+const CharacterSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  backstory: {
+    type: String
+  },
+  profession: {
+    type: String,
+    required: true
+  },
+  race: {
+    type: String,
+    required: true,
+  },
+  strength: {
+    type: String,
+    required: true
+  },
+  dexterity: {
+    type: String,
+    required: true
+  },
+  constitution: {
+    type: String,
+    required: true
+  },
+  intelligence: {
+    type: String,
+    required: true
+  },
+  wisdom: {
+    type: String,
+    required: true
+  },
+  charisma: {
+    type: String,
+    required: true
+  },
+});
+
+const Character = mongoose.model("Character", CharacterSchema);
+
+// Start defining your routes here
+app.get("/", (req, res) => {
+  res.send("Hello Player!");
+});
+
 app.post("/register", async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, nickname } = req.body;
   
   try {
     const salt = bcrypt.genSaltSync();
     if (password.length < 8) {
       res.status(400).json({
         success: false,
-        response: "Password must be at least 8 characters long."
+        response: "Password must be at least 8 characters long"
       });
     } else {
-      const newUser = await new User({username: username, password: bcrypt.hashSync(password, salt)}).save();
+      const newUser = await new User({username: username, nickname: nickname, password: bcrypt.hashSync(password, salt)}).save();
       res.status(201).json({
         success: true,
         response: {
           username: newUser.username,
           accessToken: newUser.accessToken,
+          nickname: newUser.nickname,
           id: newUser._id
         }
       });
@@ -74,7 +126,7 @@ app.post("/login", async (req, res) => {
       res.status(200).json({
         success: true,
         response: {
-          username: user.username,
+          nickname: user.nickname,
           id: user._id,
           accessToken: user.accessToken
         }
@@ -92,6 +144,38 @@ app.post("/login", async (req, res) => {
     });
   }
 });
+
+app.post("/new-character", async (req,res) => {
+  const { name, backstory, race, strength, dexterity, constitution, intelligence, wisdom, charisma, profession } = req.body;
+  if (authenticateUser) {
+    try{
+      const newCharacter = await new Character({name: name, race: race, backstory: backstory, strength: strength, dexterity: dexterity, constitution: constitution, intelligence: intelligence, wisdom: wisdom, charisma: charisma, profession: profession}).save()
+      res.status(201).json({response: {
+        name:  newCharacter.name,
+        backstory: newCharacter.backstory,
+        race: newCharacter.race,
+        strength: newCharacter.strength,
+        dexterity: newCharacter.dexterity,
+        constitution: newCharacter.constitution,
+        intelligence: newCharacter.intelligence,
+        wisdom: newCharacter.wisdom,
+        charisma: newCharacter.charisma,
+        profession: newCharacter.profession
+    }})  
+    
+    } catch(error) {
+    res.status(400).json({
+      success: false,
+      response: "Invalid character"
+    });
+    }
+  } else {
+    res.status(400).json({
+      success:false,
+      response: "First log in please."
+    })
+  }
+})
 
 const authenticateUser = async (req, res, next) => {
   const accessToken = req.header("Authorization");
@@ -112,11 +196,6 @@ const authenticateUser = async (req, res, next) => {
     })
   }
 }
-
-// Start defining your routes here
-app.get("/", (req, res) => {
-  res.send("Hello Player!");
-});
 
 // Start the server
 app.listen(port, () => {
