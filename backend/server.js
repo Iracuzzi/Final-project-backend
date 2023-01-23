@@ -5,8 +5,10 @@ import crypto from "crypto";
 import bcrypt from "bcrypt";
 
 const mongoUrl = process.env.MONGO_URL || "mongodb://localhost/final-project";
-mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
-mongoose.Promise = Promise;
+console.log(mongoUrl)
+mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+  console.log('Connected to the Database successfully')
+}); mongoose.Promise = Promise;
 
 const port = process.env.PORT || 8080;
 const app = express();
@@ -113,7 +115,7 @@ app.post("/register", async (req, res) => {
   } catch(error) {
       res.status(400).json({
         success: false,
-        response: error
+        response: "hello"
       });
   }
 });
@@ -146,8 +148,9 @@ app.post("/login", async (req, res) => {
 });
 
 app.post("/new-character", async (req,res) => {
+  const accessToken = req.header("Authorization");
   const { name, backstory, race, strength, dexterity, constitution, intelligence, wisdom, charisma, profession } = req.body;
-  if (authenticateUser) {
+  if (accessToken) {
     try{
       const newCharacter = await new Character({name: name, race: race, backstory: backstory, strength: strength, dexterity: dexterity, constitution: constitution, intelligence: intelligence, wisdom: wisdom, charisma: charisma, profession: profession}).save()
       res.status(201).json({response: {
