@@ -178,7 +178,9 @@ app.post("/new-character", async (req,res) => {
 })
 
 app.get("/character-list", async (req,res) => {
-  if (authenticateUser) {
+  const accessToken = req.header("Authorization");
+
+  if (accessToken) {
     try {
     const characterList = await Character.find().sort({createdAt: -1}).limit(20).exec();
     res.status(201).json({
@@ -192,7 +194,7 @@ app.get("/character-list", async (req,res) => {
       })}
     } else {
       res.status(400).json({
-        success:false,
+        success: false,
         response: "First log in please."
       })
     }
