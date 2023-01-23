@@ -115,7 +115,7 @@ app.post("/register", async (req, res) => {
   } catch(error) {
       res.status(400).json({
         success: false,
-        response: "hello"
+        response: error
       });
   }
 });
