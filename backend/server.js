@@ -146,9 +146,7 @@ app.post("/login", async (req, res) => {
 });
 
 app.post("/new-character", async (req,res) => {
-  const accessToken = req.header("Authorization");
   const { name, backstory, race, strength, dexterity, constitution, intelligence, wisdom, charisma, profession } = req.body;
-  if (accessToken) {
     try{
       const newCharacter = await new Character({name: name, race: race, backstory: backstory, strength: strength, dexterity: dexterity, constitution: constitution, intelligence: intelligence, wisdom: wisdom, charisma: charisma, profession: profession}).save()
       res.status(201).json({response: {
@@ -170,12 +168,6 @@ app.post("/new-character", async (req,res) => {
       response: "Invalid character"
     });
     }
-  } else {
-    res.status(400).json({
-      success:false,
-      response: "First log in please."
-    })
-  }
 })
 
 app.get("/character-list", async (req,res) => {
