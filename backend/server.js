@@ -171,11 +171,9 @@ app.post("/new-character", async (req,res) => {
 })
 
 app.get("/character-list", async (req,res) => {
-  const accessToken = req.header("Authorization");
 
-  if (accessToken) {
     try {
-    const characterList = await Character.find().sort({createdAt: -1}).limit(20).exec();
+    const characterList = await Character.find().limit(20).exec();
     res.status(201).json({
       success: true,
       response: characterList
@@ -185,12 +183,6 @@ app.get("/character-list", async (req,res) => {
         success: false,
         response: error
       })}
-    } else {
-      res.status(400).json({
-        success: false,
-        response: "First log in please."
-      })
-    }
 })
 
 const authenticateUser = async (req, res, next) => {
