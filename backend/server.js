@@ -90,7 +90,9 @@ app.get("/", (req, res) => {
 
 app.post("/register", async (req, res) => {
   const { username, password, nickname } = req.body;
-  
+  const checkUsername = await User.findOne({username})
+  const checkNickname = await User.findOne({nickname})
+  if (!checkUsername && !checkNickname){
   try {
     const salt = bcrypt.genSaltSync();
     if (password.length < 8) {
@@ -116,6 +118,12 @@ app.post("/register", async (req, res) => {
         response: error
       });
   }
+} else {
+  res.status(400).json({
+    success: false,
+    response: "This username and nickname is taken."
+  })
+}
 });
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
@@ -175,8 +183,7 @@ app.get("/character-list", async (req,res) => {
     try {
     const characterList = await Character.find().limit(20).exec();
     res.status(201).json({
-      success: true,
-      response: characterList
+      characterList
     });
     } catch (error) {
       res.status(400).json({
